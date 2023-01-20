@@ -6,10 +6,13 @@ import com.dev.museummate.domain.entity.ExhibitionEntity;
 import com.dev.museummate.domain.entity.UserEntity;
 import com.dev.museummate.exception.AppException;
 import com.dev.museummate.exception.ErrorCode;
+import com.dev.museummate.exception.ExhibitionException;
 import com.dev.museummate.repository.BookmarkRepository;
 import com.dev.museummate.repository.ExhibitionRepository;
 import com.dev.museummate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -28,7 +31,7 @@ public class ExhibitionService {
         ExhibitionEntity selectedExhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_POST, "존재하지 않는 게시물입니다."));
 
-        return new ExhibitionResponse(
+        return new ExhibitionResponse (
                 selectedExhibition.getName(),
                 selectedExhibition.getStartsAt(),
                 selectedExhibition.getEndsAt(),
@@ -38,6 +41,15 @@ public class ExhibitionService {
                 selectedExhibition.getGalleryDetail(),
                 selectedExhibition.getGallery().getId()
         );
+    }
+
+    public Page<ExhibitionResponse> findAllExhibitions (Pageable pageable) {
+        return ExhibitionResponse.of(exhibitionRepository.findAll(pageable));
+    }
+
+    public ExhibitionEntity findExhibition (Long exhibitionId) {
+        return exhibitionRepository.findById(exhibitionId).orElseThrow(() ->
+                new ExhibitionException(ErrorCode.NOT_FOUND_POST, "존재하지 않는 전시회입니다."));
     }
 
     // 해당하는 exhibition을 Bookmark에 추가
@@ -57,5 +69,4 @@ public class ExhibitionService {
             return "북마크에서 삭제되었습니다!";
         }
     }
-
 }
